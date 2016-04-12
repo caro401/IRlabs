@@ -13,10 +13,16 @@ with open(filename, "r", encoding="utf8") as fobj:
             inverted_index[word] = list()
         inverted_index[word].append(int(document))
 
-print("Inverted Index created. ")
+print("File Imported. ")
 print(len(inverted_index), " entries in dictionary.")
 print(num_postings, " total postings.")
 
 # find the 10 most frequent words
 stop_words = list()
 # for word in inverted_index:
+
+print("Stopwords: ")
+print(stop_words)
+
+query = input("Query: ")
+
