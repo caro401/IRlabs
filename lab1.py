@@ -39,5 +39,36 @@ for key, value in stop_words[:stop_num]:
     stop_words_postings += key
 print(num_postings-stop_words_postings, "total postings after the stop words are removed. ")
 
-#query = input("Query: ")
+# Simple query fuction:
+uni_query = input("Simple query, please enter a word: ")
 
+def simple_query(str):
+    try:
+        return inverted_index[str]
+    except KeyError:
+        return "Query is not in the dictionary. "
+print(simple_query(uni_query))
+    
+# function for finding the intersection of two queries
+bi_queries = input("Intersection of two queries, please seperate your queries with AND, ex. school AND kid: ")
+
+def inter_queries(str):
+    a = bi_queries.find(" AND ")
+    if a == -1:
+        a = bi_queries.find(" and ") # is there a more pythonic way to allow both "AND" and "and"?
+    if a != -1:
+        word1 = bi_queries[:a]
+        word2 = bi_queries[a+5:]
+        lst1 = simple_query(word1)
+        lst2 = simple_query(word2)
+        inter_result = sorted(list(set(lst1) & set(lst2)))
+        if len(inter_result) != 0:
+            return inter_result
+        else:
+            return "There are no entries that meet both of the queries. "
+    else:
+        return "Invalid input"
+
+print(inter_queries(bi_queries))
+        
+        
