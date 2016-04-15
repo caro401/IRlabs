@@ -1,1 +1,50 @@
 % yay report! if anyone can figure out how to compile latex on here, that would be cool...
+\documentclass{article}
+\addtolength{\oddsidemargin}{-1in}
+\addtolength{\evensidemargin}{-1in}
+\addtolength{\textwidth}{2in}
+\addtolength{\topmargin}{-.8in}
+\addtolength{\textheight}{1.6in}
+\title{Information Retrieval Lab 1}
+\author{Chiao-ting Fang, Magdalena Parks \&\ Caroline Appleby}
+\date{\today}
+\begin{document}
+\section{Create an inverted index}
+
+%compare the size of the dictionary and postings before and after lowercasing
+% how much does stop words reduce the size of the index in terms of postings?
+
+original
+4286  entries in dictionary.
+52788  total postings.
+
+original - stop
+4276 entries in dictionary after the stop words are removed.                                                                    
+45100 total postings after the stop words are removed. 
+
+lc
+3684  entries in dictionary.
+50966  total postings.
+
+lc - stop
+3674 entries in dictionary after the stop words are removed.                                                                    
+43163 total postings after the stop words are removed.  
+
+
+\section{Boolean queries}
+
+% return the number of comparisons needed to perform the intersections
+
+% measure the number of comparison steps after adding a query optimization feature
+
+\section{Ranked queries}
+% compute inverse document frequencies
+
+%make a new file with term frequencies for each document and each term, from lowercased version
+
+% compute TF/IDF for the query  
+
+% compute cosine similarity measures for the documents you found using TF/IDF
+
+
+\end{document}
