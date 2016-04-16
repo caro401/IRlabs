@@ -18,10 +18,12 @@ conn.commit()
 print("File Imported. ")
 
 # # TODO: Print out number of entries
-# num_words = c.execute("")
-# num_postings = c.execute("")
-# print(num_words, " entries in dictionary.")
-# print(num_postings, " total postings.")
+num_words = c.execute("SELECT count(*) FROM inverted_index GROUP BY word").fetchone()
+num_words = num_words[0]
+num_postings = c.execute("SELECT count(*) FROM inverted_index").fetchone()
+num_postings = num_postings[0]
+print(num_words, " entries in dictionary.")
+print(num_postings, " total postings.")
 
 c.execute("SELECT word, count(*) as c \
 from inverted_index \
