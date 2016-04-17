@@ -27,8 +27,26 @@ def tfidf(term, doc, index):
     idf = idf(term, index)
     return tf*idf
     
+    
+def dot_prod(v1, v2):
+    # calculate the dot product of 2 vectors, represented as arrays
+    if len(v1) != len(v2):
+        print("Dot product undefined over vectors of different dimensions")
+        return None
+    total = 0
+    for i in range(len(v1)):
+        total += v1[i] * v2[i]
+    return total
+    
+    
+    
 def cosine_sim(doc1, doc2):
     # actually i have no idea what this is meant to do
-    # TODO this
-    pass
+    # TODO make your documents into vectors (well, arrays) of some kind...
+    
+    sim = dot_prod(v1, v2) / (math.sqrt(dot_prod(v1, v1)) * math.sqrt(dot_prod(v2, v2)))
+    return sim
+    
+    
+    
     

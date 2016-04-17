@@ -1,4 +1,4 @@
-# This is Chiao-ting's code originally at the start of lab1.py
+# This is Chiao-ting and Magdalena's code originally at the start of lab1.py
 
 
 def make_index(filename):
