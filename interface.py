@@ -1,6 +1,6 @@
 # this is the main file, run this to call all the functions you wrote elsewhere
 #TODO error handling zzzzz
-import  create_index, queries, tfidf, python_index, sql_index
+import tfidf, python_index, sql_index
 
 
 def main():

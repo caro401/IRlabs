@@ -1,6 +1,6 @@
 # This is Chiao-ting and Magdalena's code originally at the start of lab1.py
 
-import math
+import math, subprocess
 
 class PythonIndex:
 
@@ -271,9 +271,66 @@ class PythonIndex:
                 return "There are no entries that meet both queries. "
         else:
             return "Invalid input"
+    
+    def idf(self, term, num_docs=1000):
+        # calculate the inverted document frequency of a given term, defaults to 1000 since 1000 docs in our data (i think... should probably check this)
+        # idf defined as log_10 N/(df_t)
+        df = len(self.simple_query(term))
+        return math.log((num_docs/df), 10)
+        
+        
+    def tfidf(self, term, doc):
+        # calculate the tf/idf 
+        # using the definition given in the lecture slides
+        tf = tf(term, doc)
+        idf = self.idf(term, self.inverted_index)
+        return tf*idf
+
+    
+    def compute_sim(self, query):  # TODO!
+        # find all the docs matching query
+        
+        # compute vector of tf/idf for query terms
+        # for all docs
+            # compute vector of tf/idf of all query 
+            # compute cosine_sim of that vector with the query vector
+        # rank docs according to similarity
+        # return ordered list of docs
+        pass
+        
 
 
+def dot_prod(v1, v2):
+    # calculate the dot product of 2 vectors, represented as arrays
+    if len(v1) != len(v2):
+        print("Dot product undefined over vectors of different dimensions")
+        return None
+    total = 0
+    for i in range(len(v1)):
+        total += v1[i] * v2[i]
+    return total
+    
+    
+def cosine_sim(v1, v2):
+    # compute the cosine similarity of 2 vectors
+    sim = dot_prod(v1, v2) / (math.sqrt(dot_prod(v1, v1)) * math.sqrt(dot_prod(v2, v2)))  # this works because (v1.v1) = v1^2
+    return sim
+    
 
+def tf(term, doc):
+        # work out the frequency of the given term in the given document
+        # assume existence of doc tf_lc.txt, as made in section 3 of task
+        # columns: freq, term, doc, separated by spaces? check this, and test
+        query = 'grep "' + term + "\t" + str(doc) + '" term_frequency.txt'  # TODO some kind of safety check? cos shell injection...
+        try:
+            line = subprocess.check_output(query, shell=True)  # using grep for speed in a huge file
+        except:  # grep didn't find the term and document combination you are looking for
+            return 0   
+        cols = line.decode('utf-8').split("\t")
+        print("raw freq: ", cols[0])
+        return 1 + math.log(int(cols[0]), 10)  # because the count of that term in that doc is the value in the first column of file
+    
+    
 if __name__ == "__main__":
     # do some testy stuff :)
     pass
