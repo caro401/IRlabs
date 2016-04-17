@@ -39,12 +39,7 @@ def inter_queries(q, inverted_index):
 
 def inter_many_queries(q, inverted_index):
     # function for finding the intersection of >2 query terms
-    b = q.find(" AND ")
-    while b != -1:
-        q = q[:b]+q[b:b+4].lower()+q[b+4]
-        b += 5
-        b = q.find(" AND ")
-    print(q, "Here")
+    q = q.lower()
     a = q.find(" and ")
     query_list = []
     while a != -1: # when there are still queries left (by checking " and ")
