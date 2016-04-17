@@ -8,7 +8,7 @@ def simple_query(q, inverted_index):
     # query the inverted index for a query q, expected to be a single word
     q = q.lower()
     try:
-        return inverted_index[0][q]
+        return inverted_index[q]
     except KeyError:
         return "Query is not in the dictionary. "
 # print(simple_query(uni_query))
@@ -68,6 +68,7 @@ def inter_many_queries(q, inverted_index):
 
 # Adjust your query processing routines to return the number of comparisons needed to perform the intersections.
 # Since we are using sets, we can't really see how many steps it takes to do the comparison. So here is a "revised" version of the inter_queries function
+# it walks through the two lists at the same time and update the "pointers"
 # bi_queries = input("Intersection of two queries, please seperate your queries with AND, ex. school AND kid: ")
 
 def inter_queries_re(q, inverted_index):
@@ -81,11 +82,20 @@ def inter_queries_re(q, inverted_index):
         lst2 = simple_query(word2, inverted_index)
         step = 0
         inter_result = []
-        for item1 in lst1:
-            for item2 in lst2:
+        current1 = 0
+        current2 = 0
+        while current1 <= len(lst1)-1 and current2 <= len(lst2)-1:
+            if lst1[current1] == lst2[current2]:
                 step += 1
-                if item1 == item2:
-                    inter_result.append(item1)
+                inter_result.append(lst1[current1])
+                current1 += 1
+                current2 += 1
+            elif lst1[current1] < lst2[current2]:
+                step += 1
+                current1 += 1
+            else: # lst1[current1] > lst2[current2]
+                step += 1
+                current2 += 1
         if len(inter_result) != 0:
             print("Number of steps to find the intersection: ", step)
             return inter_result
@@ -96,18 +106,17 @@ def inter_queries_re(q, inverted_index):
         
 # print(inter_queries_re(bi_queries))
 
-
-
 #Add a simple query optimization feature and measure the number of comparison steps after adding this feature.
 # It is actually not very effcient to compare each and every item in both lists as they are in order.
 # So this "optimized" version tries to skip smaller postings (see 2.3 in the textbook and check if I interpret it correctly? )
+# Unlike the skip points which occur every 3-4 items, this check the skip point for every item (would that be ok?)
 # bi_queries = input("Intersection of two queries, please seperate your queries with AND, ex. school AND kid: ")
-def inter_queries_re_op(str, inverted_index):
-    str = str.lower()
-    a = str.find(" and ") # the space is included so that it can take "and" as queries
+def inter_queries_op(q, inverted_index):
+    q = q.lower()
+    a = q.find(" and ") # the space is included so that it can take "and" as queries
     if a != -1:
-        word1 = str[:a]
-        word2 = str[a+5:]
+        word1 = q[:a]
+        word2 = q[a+5:]
         lst1 = simple_query(word1, inverted_index)
         lst2 = simple_query(word2, inverted_index)
         step = 0
@@ -116,16 +125,31 @@ def inter_queries_re_op(str, inverted_index):
         skip2 = round(math.sqrt(len(lst2)))
         current1 = 0
         current2 = 0
-        if lst1[current1]>lst2[current2]:
-            #TODO something...
-            pass
-            
-            
-        
-        else:
-            # TODO something...
-            pass
-            
+        while current1 <= len(lst1)-1 and current2 <= len(lst2)-1:
+            if lst1[current1] == lst2[current2]:
+                #print(lst1[current1], lst2[current2])
+                step += 1
+                inter_result.append(lst1[current1])
+                current1 += 1
+                current2 += 1
+            elif lst1[current1] < lst2[current2]:
+                #print(lst1[current1], lst2[current2])
+                step += 1
+                if current1+skip1 <= len(lst1)-1:
+                    if lst1[current1+skip1] < lst2[current2]:
+                        #print(lst1[current1+skip1], lst2[current2])
+                        current1 += skip1
+                current1 += 1
+            else: # lst1[current1] > lst2[current2]
+                #print(lst1[current1], lst2[current2])
+                step += 1
+                if current2+skip2 <= len(lst2)-1:
+                    if lst1[current1] > lst2[current2+skip2]:
+                        #print(lst1[current1], lst2[current2+skip2])
+                        current2 += skip2
+                # lst1[current1] < lst2[current2+skip2], do not skip
+                current2 += 1
+                        
         if len(inter_result) != 0:
             print("Number of steps to find the intersection: ", step)
             return inter_result
