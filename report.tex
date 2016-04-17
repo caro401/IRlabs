@@ -10,39 +10,38 @@
 \date{\today}
 \begin{document}
 \section{Create an inverted index}
-
-%compare the size of the dictionary and postings before and after lowercasing
-% how much does stop words reduce the size of the index in terms of postings?
-
-original
-4286  entries in dictionary.
-52788  total postings.
-
-original - stop
-4276 entries in dictionary after the stop words are removed.                                                                    
-45100 total postings after the stop words are removed. 
-
-lc
-3684  entries in dictionary.
-50966  total postings.
-
-lc - stop
-3674 entries in dictionary after the stop words are removed.                                                                    
-43163 total postings after the stop words are removed.  
+The program we implemented is written in Python 3. The inverted index is read in to a Python dictionary, which is implemented under the hood as a hash table. This allows for very fast searching **what order**. In our dictionary, the keys are the individual terms, stored as strings, and the values are Python arrays of integers, where each item in the array is the ID of a document containing this term, conceptually the postings list for that term. Table \ref{table:size} shows the size of our inverted index, with and without lowercasing the input, and with and without removing 10 stop words.
+\begin{table}[h!]
+\centering
+\begin{tabular}[|l|l|l|] \hline
+Inverted index & Number of terms & Total postings \\ \hline
+Original & 4286 & 52788 \\
+Original - Stopwords & 4276 & 45100 \\
+Lowercased & 3684 & 50966 \\
+Lowercased - Stopwords & 3674 & 43163 \\ \hline
+\end{tabular}
+\caption{\label{table:size}Size of different inverted indexes}
+\end{table}
 
 
 \section{Boolean queries}
+% output of query for ``school'', ``school AND kids'', ``really AND kids AND school''
 
 % return the number of comparisons needed to perform the intersections
+Our query routine with no optimization works as described in section 1/3 of the textbook **cite**, progressing through two sorted arrays of postings, one for each of the search terms, and appending a document ID to a new list if that ID occurs in both of the existing arrays. This is expected to run in linear time, proportional to the total number of items in the two postings lists. 
 
 % measure the number of comparison steps after adding a query optimization feature
+We chose to add the query optimization feature decribed in section 2.3: the addition of skip pointers to the postings lists. **is this actually going to reduce the time complexity?** This works by adding so-called ``skip pointers'' into the postings lists, which allow us to miss out some comparisons **Chiao-ting can you explain how this works**. In reality, because our postings lists are fairly short, this kind of optimization is not going to make a noticeable difference to the real running time of a query to our inverted index. 
 
 \section{Ranked queries}
 % compute inverse document frequencies
+Inverted document frequency of a particular term is defined as $\log_10 \frac{N}{df_t}$, where $N$ is the total number of documents in the collection, and $df_t$ is the total number of documents in which that term appears. We can calculate $df_t$ from the length of the postings list of the term in question, since this tells us how many documents the term appears in. The total number of documents in our collection, in this case 1000, is hard-coded into the function definition, as the default value of one of the arguments. 
 
 %make a new file with term frequencies for each document and each term, from lowercased version
 
 % compute TF/IDF for the query  
+TF/IDF can be computed directly from the results of calls to the functions for calculating TF and IDF individually, by multiplying these values, according to the definition of TF/IDF as $(1+ \log_10 tf_{t,d})\times \log_10 \frac{N}{df_t}$
+
 
 % compute cosine similarity measures for the documents you found using TF/IDF
 
