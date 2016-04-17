@@ -43,12 +43,11 @@ class PythonIndex:
             stop_words_postings += key
         print(self.num_postings-stop_words_postings, "total postings after the stop words are removed. ")
 
-    def query(self, q):
+    def query(self, q, opt="s"):
         query_words = q.split(" ")
         if len(query_words) == 1:  # ie a single word
             return self.simple_query(q)
         elif len(query_words) == 3:  # ie conjunction of 2 words
-            opt = input("What kind of function would you like to use? Type\n    's' for using the function with set\n    'n' for normal walk through\n    'o' for optimized version with skip pointers for every step\n    '2' for optimized version with fixed skip pointers\nchoices: ")
             if opt =='s':
                 return self.inter_queries(q)
             elif opt =='n':
@@ -287,16 +286,33 @@ class PythonIndex:
         return tf*idf
 
     
-    def compute_sim(self, query):  # TODO!
-        # find all the docs matching query
-        
+    def compute_sim(self, query_str):  # TODO!
+        # find all the docs matching query, assumiung this will be lowercased alread
+        doc_list = self.query(query_str)  #TODO which query function
         # compute vector of tf/idf for query terms
-        # for all docs
-            # compute vector of tf/idf of all query 
-            # compute cosine_sim of that vector with the query vector
-        # rank docs according to similarity
+        query_terms = query_str.split(" and ")
+        query_vector = []  # compute tf/idf for each term in query wrt query in here
+        # going to assume unique query terms, so raw tf = 1, scaled tf = 1 + log_10(1) = 1
+        for term in query_terms:
+            query_vector.append(self.idf(term))
+        
+        scores = []  # this will be a list of tuples (doc-id, cosine-sim)
+        
+        for doc in doc_list:
+            doc_vector = []
+            for term in query_terms:
+                doc_vector.append(self.tfidf(doc, term)) # compute vector of tf/idf of all query 
+            sim = cosine_sim(query_vector, doc_vector) # compute cosine_sim of that vector with the query vector
+            scores.append((doc, sim))
+        
+                # rank docs according to similarity
+    
+        scores = sorted(scores, key=lambda x: x[1])  # sort the list of tuples on the cosine sim
+        
+        
         # return ordered list of docs
-        pass
+        ordered_docs =  [x[0] for x in scores]  # I hope this will give you a list consisting just of the first bit of each tuple, ie the docID
+        return ordered_docs
         
 
 
