@@ -7,24 +7,27 @@ def main():
     print("Code for Information Retrieval Lab 1 by Chiao-ting Fang, Magdalena Parks & Caroline Appleby")
     style = input("Would you like to use a Python dictionary or a SQLite database? Type 'dict' or 'db': ")
     filename = input("Create an inverted index! Please input the filename: ")
-    stop = input("How many stop words would you like? Please enter a number: ")
     
+    if style == "dict":
+        try:
+            index = python_index.PythonIndex(filename)
+        except:
+            print("File not found, please try again. ")
+            return
+    elif style == "db":
+        index = sql_index.SQLIndex(filename)
+    else:
+        print("Invalid input, please enter between 'dict' and 'db'.")
+        return
+        
+    
+    stop = input("How many stop words would you like? Please enter a number: ")
     try: 
         stop_num = int(stop)
     except ValueError:
         print("Not a valid number, defaulting to 10")
         stop_num = 10 
-    
-    if style == "dict":
-        index = python_index.PythonIndex(filename)
-    elif style == "db":
-        index = sql_index.SQLIndex(filename)
-        pass
-    
-    else:
-        print("I don't understand, and Caroline hates error handling. Bye!")  #TODO real error handling...
-        return
-
+        
     print("File Imported. Basic inverted index created. ")
     print(index.get_num_words(), " entries in dictionary.")
     print(index.get_num_postings(), " total postings.")
@@ -57,8 +60,8 @@ def main():
         # print(tfidf.tfidf(term, doc, index))
         
     else:
-        print("Invalid input, please try again") # TODO proper error message
-
+        print("Invalid input, please try again") 
+        
 
     
 if __name__ == "__main__":

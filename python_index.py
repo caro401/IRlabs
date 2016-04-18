@@ -9,14 +9,14 @@ class PythonIndex:
         # inverted index is a dictionary with words as keys, mapping to a list of associated documents
         self.inverted_index = dict()
         self.num_postings = 0
-        with open(filename, "r", encoding="utf8") as fobj:  # TODO error handling here ugh
+        with open(filename, "r", encoding="utf8") as fobj:
             for line in fobj:
                 self.num_postings += 1
                 word, document = line.split()
                 if word not in self.inverted_index:
                     self.inverted_index[word] = list()
                 self.inverted_index[word].append(int(document))
-
+        
     def get_num_words(self):
         return len(self.inverted_index)
 
@@ -68,19 +68,18 @@ class PythonIndex:
             return self.inverted_index[q]
         except KeyError:
             return "Query is not in the dictionary. "
-    # print(simple_query(uni_query))
 
     def inter_queries(self, q):
         # function for finding the intersection of two query terms
         a = q.find(" ")
         q = q[:a]+q[a:a+4].lower()+q[a+4:] # just lower "AND"
         a = q.find(" and ") # the space is included so that it can take "and" as queries
-        if a != -1:
+        if a != -1: 
             word1 = q[:a]
             word2 = q[a+5:]
             lst1 = self.simple_query(word1)
             lst2 = self.simple_query(word2)
-            inter_result = sorted(list(set(lst1) & set(lst2)))
+            inter_result = sorted(list(set(lst1) & set(lst2))) # use set to get the intersection of two queries
             if len(inter_result) != 0:
                 return inter_result
             else:
@@ -88,9 +87,9 @@ class PythonIndex:
         else:
             return "Invalid input"
 
-    def inter_many_queries(self, q):
+    def inter_many_queries(self, q): # this function is not case-sensitive yet...
         # function for finding the intersection of >2 query terms
-        q = q.lower()
+        q = q.lower() 
         a = q.find(" and ")
         query_list = []
         while a != -1: # when there are still queries left (by checking " and ")
@@ -98,7 +97,7 @@ class PythonIndex:
             query_list.append(word)
             q = q[a+5:]
             a = q.find(" and ")
-        query_list.append(q) # all the queries are appended items in this list
+        query_list.append(q) # all the queries are appended to this list
 
         intersections = []
         for item in query_list:  # go through each item in the query_list
@@ -114,15 +113,13 @@ class PythonIndex:
             return "There are no entries that meet all the queries."
 
 
-#print(inter_many_queries(multi_queries))
-
 # Adjust your query processing routines to return the number of comparisons needed to perform the intersections.
 # Since we are using sets, we can't really see how many steps it takes to do the comparison. So here is a "revised" version of the inter_queries function
 # it walks through the two lists at the same time and update the "pointers"
 # bi_queries = input("Intersection of two queries, please seperate your queries with AND, ex. school AND kid: ")
 
     def inter_queries_re(self, q):
-        # revised version of inter_queries() with manual comparison of postings lists, to see steps in intersection process
+        # revised O(m+n) version of inter_queries() showing how many comparison steps there are
         a = q.find(" ")
         q = q[:a]+q[a:a+4].lower()+q[a+4:] # just lower "AND"
         a = q.find(" and ") # the space is included so that it can take "and" as queries
@@ -131,23 +128,23 @@ class PythonIndex:
             word2 = q[a+5:]
             lst1 = self.simple_query(word1)
             lst2 = self.simple_query(word2)
-            step = 0
-            inter_result = []
-            current1 = 0
-            current2 = 0
-            while current1 <= len(lst1)-1 and current2 <= len(lst2)-1:
-                if lst1[current1] == lst2[current2]:
+            step = 0 # for counting the step
+            inter_result = [] # the intersection of the posting will be appended here
+            current1 = 0 # pointer for lst1
+            current2 = 0 # pointer for lst2
+            while current1 <= len(lst1)-1 and current2 <= len(lst2)-1: # when both have not reach the end of the list
+                if lst1[current1] == lst2[current2]: # if found in both, increase step, append, and move pointer. 
                     step += 1
                     inter_result.append(lst1[current1])
                     current1 += 1
                     current2 += 1
-                elif lst1[current1] < lst2[current2]:
+                elif lst1[current1] < lst2[current2]: # if the current item in lst1 is smaller, increase step and current1
                     step += 1
                     current1 += 1
-                else: # lst1[current1] > lst2[current2]
+                else: # lst1[current1] > lst2[current2], increase step and current2 
                     step += 1
                     current2 += 1
-            if len(inter_result) != 0:
+            if len(inter_result) != 0: # print the steps and result
                 print("Number of steps to find the intersection: ", step)
                 return inter_result
             else:
@@ -155,12 +152,10 @@ class PythonIndex:
         else:
             return "Invalid input"
 
-    # print(inter_queries_re(bi_queries))
-
-    #Add a simple query optimization feature and measure the number of comparison steps after adding this feature.
+    # ""Add a simple query optimization feature and measure the number of comparison steps after adding this feature.""
     # It is actually not very effcient to compare each and every item in both lists as they are in order.
     # So this "optimized" version tries to skip smaller postings by checking ahead
-    # Unlike the skip points which occur every 3-4 items, this check the skip pointer for every item.
+    # Unlike the skip points which occur every sqrt(len(lst)) items, this check the skip pointer for every item.
     # bi_queries = input("Intersection of two queries, please seperate your queries with AND, ex. school AND kid: ")
     def inter_queries_op(self, q):
         a = q.find(" ")
@@ -171,46 +166,41 @@ class PythonIndex:
             word2 = q[a+5:]
             lst1 = self.simple_query(word1)
             lst2 = self.simple_query(word2)
-            step = 0
-            inter_result = []
-            skip1 = round(math.sqrt(len(lst1)))
-            skip2 = round(math.sqrt(len(lst2)))
-            current1 = 0
-            current2 = 0
-            while current1 <= len(lst1)-1 and current2 <= len(lst2)-1:
-                if lst1[current1] == lst2[current2]:
-                    #print(lst1[current1], lst2[current2])
-                    step += 1
+            step = 0 # counting the steps
+            inter_result = [] # the intersection goes here
+            skip1 = round(math.sqrt(len(lst1))) # the skip gap is the square root of the length of the list
+            skip2 = round(math.sqrt(len(lst2))) 
+            current1 = 0 # pointer for lst1
+            current2 = 0 # pointer for lst2 
+            while current1 <= len(lst1)-1 and current2 <= len(lst2)-1: # when both have not reach the end of the lists
+                if lst1[current1] == lst2[current2]:  # if the item occurs in both lists, increase step, add item to result, move both pointers
+                    step += 1 
                     inter_result.append(lst1[current1])
                     current1 += 1
                     current2 += 1
-                elif lst1[current1] < lst2[current2]:
-                    #print(lst1[current1], lst2[current2])
-                    step += 1
-                    if current1+skip1 <= len(lst1)-1:
-                        if lst1[current1+skip1] < lst2[current2]:
-                            #print(lst1[current1+skip1], lst2[current2])
-                            current1 += skip1
-                    current1 += 1
-                else: # lst1[current1] > lst2[current2]
-                    #print(lst1[current1], lst2[current2])
-                    step += 1
-                    if current2+skip2 <= len(lst2)-1:
-                        if lst1[current1] > lst2[current2+skip2]:
-                            #print(lst1[current1], lst2[current2+skip2])
-                            current2 += skip2
-                    # lst1[current1] < lst2[current2+skip2], do not skip
-                    current2 += 1
-
+                elif lst1[current1] < lst2[current2]: # if the current item in lst1 is smaller
+                    step += 1 # increase step
+                    if current1+skip1 <= len(lst1)-1: # if the current point plus the gap to skip pointer is within the list length 
+                        if lst1[current1+skip1] < lst2[current2]: # check if the skip pointer in lst1 will still be smaller than item in lst2 
+                            current1 += skip1 # if yes, increase current1 with the gap
+                    current1 += 1 # if not, just increase pointer by 1
+                else: # lst1[current1] > lst2[current2] (if the current item in lst2 is smaller)
+                    step += 1 # increase step
+                    if current2+skip2 <= len(lst2)-1: # if the current point plus the gap to skip pointer is within the list length 
+                        if lst1[current1] > lst2[current2+skip2]: # check if the skip pointer in lst2 will still be smaller than item in lst1
+                            current2 += skip2 # if yes, increase current2 with the gap
+                    current2 += 1 # if not, just increase pointer by 1
             if len(inter_result) != 0:
-                print("Number of steps to find the intersection: ", step)
-                return inter_result
+                print("Number of steps to find the intersection: ", step) # the total number of steps is printed 
+                return inter_result # return list of intersection 
             else:
                 return "There are no entries that meet both queries. "
         else:
             return "Invalid input"
 
-    # print(inter_queries_re_op(bi_queries))
+# The function above checks skip point for every item and decides if a skip is needed.
+# But according to the textbook (P.34) only a number of the postings have skip pointers that can jump ahead, others still increase gradually.
+# This function here works with fixed skip pointers, only items in the item_skip lists will be checked when needed.
 
     def inter_queries_op_2(self, q):
         a = q.find(" ")
@@ -227,44 +217,39 @@ class PythonIndex:
             skip2 = round(math.sqrt(len(lst2)))
             current1 = 0
             current2 = 0
-            item_skip1 = []
-            item_skip2 = []
-            for i in range(0, len(lst1), skip1):
+            item_skip1 = [] # list of items with skip pointers in lst1 
+            item_skip2 = [] # list of items with skip pointers in lst2 
+            for i in range(0, len(lst1), skip1): # append items with skip1 as gap
                 item_skip1.append(lst1[i])
-            for i in range(0, len(lst2), skip2):
+            for i in range(0, len(lst2), skip2): # append items with skip2 as gap
                 item_skip2.append(lst2[i])
-            while current1 <= len(lst1)-1 and current2 <= len(lst2)-1:
+            while current1 <= len(lst1)-1 and current2 <= len(lst2)-1: # when both lists have not reach the end
                 if lst1[current1] == lst2[current2]:
-                    #print(lst1[current1], lst2[current2])
                     step += 1
                     inter_result.append(lst1[current1])
                     current1 += 1
                     current2 += 1
-                elif lst1[current1] < lst2[current2]:
-                    #print(lst1[current1], lst2[current2])
+                elif lst1[current1] < lst2[current2]: # if current item in lst1 is smaller than the current in lst2
                     step += 1
-                    if lst1[current1] in item_skip1[:-1]:
-                        if lst1[current1+skip1] < lst2[current2]:
-                            #print(lst1[current1+skip1], lst2[current2])
-                            current1 += skip1
-                        else:
+                    if lst1[current1] in item_skip1[:-1]: # if current item has skip pointer, but is not the last item in the item_skip1 list (can't skip to next if it is the last one)
+                        if lst1[current1+skip1] < lst2[current2]: # if current will still be smaller than item in lst2 after skip
+                            current1 += skip1 # then skip
+                        else: # if not, just increase by 1
                             current1 +=1
                     else:
                         current1 += 1
                 else: # lst1[current1] > lst2[current2]
-                    #print(lst1[current1], lst2[current2])
                     step += 1
-                    if lst2[current2] in item_skip2[:-1]:
-                        if lst1[current1] > lst2[current2+skip2]:
-                            #print(lst1[current1], lst2[current2+skip2])
-                            current2 += skip2
-                        else:
-                            current2 += 1
-                    else: # lst1[current1] < lst2[current2+skip2], do not skip
+                    if lst2[current2] in item_skip2[:-1]: # if current item has skip pointer and is not the last in item_skip2 list
+                        if lst1[current1] > lst2[current2+skip2]: # if current will still be smaller than item in lst1 after skip  
+                            current2 += skip2 # then skip
+                        else: # if not, just increase by 1
+                            current2 += 1 
+                    else: # lst1[current1] < lst2[current2+skip2], do not skip, just increase 1
                         current2 += 1
 
             if len(inter_result) != 0:
-                print("Number of steps to find the intersection: ", step)
+                print("Number of steps to find the intersection: ", step) # print the steps and return the result
                 return inter_result
             else:
                 return "There are no entries that meet both queries. "
@@ -346,7 +331,3 @@ def tf(term, doc):
         print("raw freq: ", cols[0])
         return 1 + math.log(int(cols[0]), 10)  # because the count of that term in that doc is the value in the first column of file
     
-    
-if __name__ == "__main__":
-    # do some testy stuff :)
-    pass
