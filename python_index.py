@@ -17,6 +17,7 @@ class PythonIndex:
                     self.inverted_index[word] = list()
                 self.inverted_index[word].append(int(document))
         
+
     def get_num_words(self):
         return len(self.inverted_index)
 
@@ -43,7 +44,7 @@ class PythonIndex:
             stop_words_postings += key
         print(self.num_postings-stop_words_postings, "total postings after the stop words are removed. ")
 
-    def query(self, q, opt="s"):
+    def query(self, q, opt='s'):
         query_words = q.split(" ")
         if len(query_words) == 1:  # ie a single word
             return self.simple_query(q)
@@ -57,10 +58,10 @@ class PythonIndex:
             elif opt =='2':
                 return self.inter_queries_op_2(q)
             else:
-                print("Invalid input, please try again") # TODO proper error handling message
+                print("Invalid input, please try again") 
         elif len(query_words) >= 5:  # ie conjunction of 3 or more words
-            return self.inter_many_queries(q)  # TODO make this work with optimisation option Errr we don't have such thing... only conj of 2 words has it
-
+            return self.inter_many_queries(q) 
+            
     # Simple query fuction:
     def simple_query(self, q):
         # query the inverted index for a query q, expected to be a single word
@@ -87,7 +88,7 @@ class PythonIndex:
         else:
             return "Invalid input"
 
-    def inter_many_queries(self, q): # this function is not case-sensitive yet...
+    def inter_many_queries(self, q): # this function is not case-sensitive
         # function for finding the intersection of >2 query terms
         q = q.lower() 
         a = q.find(" and ")

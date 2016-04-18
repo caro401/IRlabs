@@ -31,16 +31,17 @@ def main():
     print("File Imported. Basic inverted index created. ")
     print(index.get_num_words(), " entries in dictionary.")
     print(index.get_num_postings(), " total postings.")
-    print("Stop Words: ")
     print(index.get_stop_words(stop_num))
 
     
     nxt = input("What would you like to do next? Type\n    'q' for a  query\n    'tf' for a term frequency\n    'idf' for an inverted document frequency\n    'tf/idf' for a TF/IDF value\n    'cos' for cosine similarity\nchoice: ")
     
     if nxt == "q":
-        opt = input("What kind of function would you like to use? Type\n    's' for using the function with set\n    'n' for normal walk through\n    'o' for optimized version with skip pointers for every step\n    '2' for optimized version with fixed skip pointers\nchoices: ")
-            
         query = input("Please type your query, using 'AND' to denote conjunction: ")
+        if style == 'dict':
+            opt = input("What kind of function would you like to use? Type\n    's' for using the function with set\n    'n' for normal walk through\n    'o' for optimized version with skip pointers for every step\n    '2' for optimized version with fixed skip pointers\nchoices: ")
+        else:
+            opt = 's'
         print(index.query(query, opt))
 
     elif nxt == "tf":
