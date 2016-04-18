@@ -48,11 +48,12 @@ class SQLIndex:
     def query(self, q, opt=""):
         c = self.conn.cursor()
         words = q.split(" AND ")
+        words.append(len(words))
 
         c.execute("SELECT document, count(*) as c from inverted_index \
             where word IN (%s) \
             GROUP BY document \
-            HAVING c = 2" % ','.join('?'*len(words)), words)
+            HAVING c = ?" % ','.join('?'*(len(words)-1)), words)
 
         ret = list()
         for entry in c.fetchall():
