@@ -62,19 +62,26 @@ class PythonIndex:
         query_words = q.split(" ")
         if len(query_words) == 1:  # ie a single word
             return self.simple_query(q)
-        elif len(query_words) == 3:  # ie conjunction of 2 words
+        elif len(query_words) >= 3:  # ie conjunction of 2 words
             if opt =='s':
-                return self.inter_queries(q)
+                if len(query_words) > 3:
+                    return self.inter_many_queries(q)
+                else:
+                    return self.inter_queries(q)
             elif opt =='n':
-                return self.inter_queries_re(q)
+                query_result = self.inter_queries_re(q)
+                print("Number of steps to find intersection:", query_result[1])
+                return query_result[0]
             elif opt =='o':
-                return self.inter_queries_op(q)
+                query_result = self.inter_queries_op(q)
+                print("Number of steps to find intersection:", query_result[1])
+                return query_result[0]
             elif opt =='2':
-                return self.inter_queries_op_2(q)
+                query_result = self.inter_queries_op_2(q)
+                print("Number of steps to find intersection:", query_result[1])
+                return query_result[0]
             else:
-                print("Invalid input, please try again") 
-        elif len(query_words) >= 5:  # ie conjunction of 3 or more words
-            return self.inter_many_queries(q) 
+                print("Invalid input, please try again")
             
     # Simple query fuction:
     def simple_query(self, q):
@@ -142,8 +149,12 @@ class PythonIndex:
             word1 = q[:a]
             word2 = q[a+5:]
             lst1 = self.simple_query(word1)
-            lst2 = self.simple_query(word2)
-            step = 0 # for counting the step
+            word2_a = q.find(" AND ")
+            if word2_a != -1:
+                lst2, step = self.inter_queries_re(word2)
+            else:
+                lst2 = self.simple_query(word2)
+                step = 0 # for counting the step
             inter_result = [] # the intersection of the posting will be appended here
             current1 = 0 # pointer for lst1
             current2 = 0 # pointer for lst2
@@ -159,13 +170,10 @@ class PythonIndex:
                 else: # lst1[current1] > lst2[current2], increase step and current2 
                     step += 1
                     current2 += 1
-            if len(inter_result) != 0: # print the steps and result
-                print("Number of steps to find the intersection: ", step)
-                return inter_result
-            else:
-                return "There are no entries that meet both queries. "
+            # print("Number of steps to find the intersection: ", step)
+            return inter_result, step
         else:
-            return "Invalid input"
+            return self.simple_query(q), 0
 
     # ""Add a simple query optimization feature and measure the number of comparison steps after adding this feature.""
     # It is actually not very effcient to compare each and every item in both lists as they are in order.
@@ -180,8 +188,12 @@ class PythonIndex:
             word1 = q[:a]
             word2 = q[a+5:]
             lst1 = self.simple_query(word1)
-            lst2 = self.simple_query(word2)
-            step = 0 # counting the steps
+            word2_a = q.find(" AND ")
+            if word2_a != -1:
+                lst2, step = self.inter_queries_op(word2)
+            else:
+                lst2 = self.simple_query(word2)
+                step = 0 # for counting the step
             inter_result = [] # the intersection goes here
             skip1 = round(math.sqrt(len(lst1))) # the skip gap is the square root of the length of the list
             skip2 = round(math.sqrt(len(lst2))) 
@@ -205,13 +217,9 @@ class PythonIndex:
                         if lst1[current1] > lst2[current2+skip2]: # check if the skip pointer in lst2 will still be smaller than item in lst1
                             current2 += skip2 # if yes, increase current2 with the gap
                     current2 += 1 # if not, just increase pointer by 1
-            if len(inter_result) != 0:
-                print("Number of steps to find the intersection: ", step) # the total number of steps is printed 
-                return inter_result # return list of intersection 
-            else:
-                return "There are no entries that meet both queries. "
+            return inter_result, step
         else:
-            return "Invalid input"
+            return self.simple_query(q), 0
 
 # The function above checks skip point for every item and decides if a skip is needed.
 # But according to the textbook (P.34) only a number of the postings have skip pointers that can jump ahead, others still increase gradually.
@@ -225,8 +233,12 @@ class PythonIndex:
             word1 = q[:a]
             word2 = q[a+5:]
             lst1 = self.simple_query(word1)
-            lst2 = self.simple_query(word2)
-            step = 0
+            word2_a = q.find(" AND ")
+            if word2_a != -1:
+                lst2, step = self.inter_queries_op_2(word2)
+            else:
+                lst2 = self.simple_query(word2)
+                step = 0 # for counting the step
             inter_result = []
             skip1 = round(math.sqrt(len(lst1)))
             skip2 = round(math.sqrt(len(lst2)))
@@ -263,13 +275,9 @@ class PythonIndex:
                     else: # lst1[current1] < lst2[current2+skip2], do not skip, just increase 1
                         current2 += 1
 
-            if len(inter_result) != 0:
-                print("Number of steps to find the intersection: ", step) # print the steps and return the result
-                return inter_result
-            else:
-                return "There are no entries that meet both queries. "
+            return inter_result, step
         else:
-            return "Invalid input"
+            return self.simple_query(q), 0
     
     
 

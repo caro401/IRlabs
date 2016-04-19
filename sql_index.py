@@ -55,8 +55,8 @@ class SQLIndex:
                 GROUP BY word, document) as A \
                 GROUP BY word \
                 ORDER BY c DESC \
-                LIMIT 10) as B \
-            )")
+                LIMIT ?) as B \
+            )", (num_stop,))
 
         num_postings = c.fetchone()
         num_postings = num_postings[0]
