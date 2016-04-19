@@ -1,7 +1,7 @@
 # class for an inverted index represented as a python dictionary
 
 
-import math, subprocess, shlex
+import math, subprocess, shlex, tfidf_util
 
 class PythonIndex:
 
@@ -10,10 +10,18 @@ class PythonIndex:
         # inverted index is a dictionary with words as keys, mapping to a list of associated documents
         self.inverted_index = dict()
         self.num_postings = 0
+        self._tf = dict()
+        self._docs = set()
         with open(filename, "r", encoding="utf8") as fobj:
             for line in fobj:
-                self.num_postings += 1
                 word, document = line.split()
+                self._docs.add(int(document))
+                if word not in self._tf:
+                    self._tf[word] = dict()
+                if int(document) not in self._tf[word]:
+                    self._tf[word][int(document)] = 0
+                    self.num_postings += 1
+                self._tf[word][int(document)] += 1
                 if word not in self.inverted_index:
                     self.inverted_index[word] = list()
                 self.inverted_index[word].append(int(document))
@@ -35,15 +43,20 @@ class PythonIndex:
             stop_words.append((len(value), key))
 
         stop_words.sort(reverse=True)
-        print("Stopwords: ")
-        print(stop_words[:stop_num])
+        # print("Stopwords: ")
+        # print(stop_words[:stop_num])
 
         # update the size of total entries and postings after removing all the stop words
-        print(len(self.inverted_index)-stop_num, "entries in dictionary after the stop words are removed. ")
+        print(len(self.inverted_index)-stop_num, "words in dictionary after the stop words are removed. ")
         stop_words_postings = 0
         for key, value in stop_words[:stop_num]:
             stop_words_postings += key
         print(self.num_postings-stop_words_postings, "total postings after the stop words are removed. ")
+
+        ret = list()
+        for entry in stop_words[:stop_num]:
+            ret.append(entry[1])
+        return ret
 
     def query(self, q, opt='s'):
         query_words = q.split(" ")
@@ -259,21 +272,24 @@ class PythonIndex:
             return "Invalid input"
     
     
-    
+
 # functions for final part of assignment
 
-    def idf(self, term, num_docs=1000):
+    def tf(self, term, doc):
+        return self._tf[term][doc]
+
+    def idf(self, term):
         # calculate the inverted document frequency of a given term, defaults to 1000 since 1000 docs in our data (i think... should probably check this)
         # idf defined as log_10 N/(df_t)
         df = len(self.simple_query(term))
-        return math.log((num_docs/df), 10)
+        return math.log((len(self._docs)/df), 10)
         
         
     def tfidf(self, term, doc_id):
         # calculate the tf/idf 
         # using the definition given in the lecture slides
-        tf = tf(term, doc_id)
-        idf = self.idf(term, self.inverted_index)
+        tf = self.tf(term, doc_id)
+        idf = self.idf(term)
         return tf*idf
 
     
@@ -282,7 +298,7 @@ class PythonIndex:
         doc_list = self.query(query_str) 
         
         # compute vector of tf/idf for query terms
-        query_terms = query_str.split(" and ")
+        query_terms = query_str.split(" AND ")
         query_vector = []  # compute tf/idf for each term in query wrt query in here
         # going to assume unique query terms, so raw tf = 1, scaled tf = 1 + log_10(1) = 1
         for term in query_terms:
@@ -294,8 +310,8 @@ class PythonIndex:
         for doc in doc_list:
             doc_vector = []
             for term in query_terms:
-                doc_vector.append(self.tfidf(doc, term)) # compute vector of tf/idf of all query 
-            sim = cosine_sim(query_vector, doc_vector) # compute cosine_sim of that vector with the query vector
+                doc_vector.append(self.tfidf(term, doc)) # compute vector of tf/idf of all query
+            sim = tfidf_util.cosine_sim(query_vector, doc_vector) # compute cosine_sim of that vector with the query vector
             scores.append((doc, sim))
         
         # rank docs according to similarity
@@ -306,35 +322,3 @@ class PythonIndex:
         ordered_docs =  [x[0] for x in scores]  # I hope this will give you a list consisting just of the first bit of each tuple, ie the docID
         return ordered_docs
         
-
-
-def dot_prod(v1, v2):
-    # calculate the dot product of 2 vectors, represented as arrays
-    if len(v1) != len(v2):
-        print("Dot product undefined over vectors of different dimensions")
-        return None
-    total = 0
-    for i in range(len(v1)):
-        total += v1[i] * v2[i]
-    return total
-    
-    
-def cosine_sim(v1, v2):
-    # compute the cosine similarity of 2 vectors
-    sim = dot_prod(v1, v2) / (math.sqrt(dot_prod(v1, v1)) * math.sqrt(dot_prod(v2, v2)))  # this works because (v1.v1) = v1^2
-    return sim
-    
-
-def tf(term, doc):
-    # work out the frequency of the given term in the given document
-    # assume existence of doc term_frequency.txt, as made in section 3 of task
-    #TODO test this with shlex
-    query = shlex.quote('grep "' + term + "\t" + str(doc) + '" term_frequency.txt')  # special shell-escaped version of the string to avoid shell injection attacks
-    try:
-        line = subprocess.check_output(query, shell=True)  # using grep for speed in a huge file
-    except:  # grep didn't find the term and document combination you are looking for
-        return 0   
-    cols = line.decode('utf-8').split("\t")
-    print("raw freq: ", cols[0])
-    return 1 + math.log(int(cols[0]), 10)  # because the count of that term in that doc is the value in the first column of file
-    
