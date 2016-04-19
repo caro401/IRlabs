@@ -7,10 +7,9 @@ class PythonIndex:
 
     def __init__(self, filename):
         # create and fill inverted index
-        # inverted index is a dictionary with words as keys, mapping to a list of associated documents
         self.inverted_index = dict()
         self.num_postings = 0
-        self._tf = dict()
+        self._tf = dict()  # what even is this?
         self._docs = set()
         with open(filename, "r", encoding="utf8") as fobj:
             for line in fobj:
@@ -284,10 +283,11 @@ class PythonIndex:
 # functions for final part of assignment
 
     def tf(self, term, doc):
+        # return the raw term frequency of the term in the document (I presume???)
         return self._tf[term][doc]
 
     def idf(self, term):
-        # calculate the inverted document frequency of a given term, defaults to 1000 since 1000 docs in our data (i think... should probably check this)
+        # calculate the inverted document frequency of a given term
         # idf defined as log_10 N/(df_t)
         df = len(self.simple_query(term))
         return math.log((len(self._docs)/df), 10)
@@ -296,12 +296,12 @@ class PythonIndex:
     def tfidf(self, term, doc_id):
         # calculate the tf/idf 
         # using the definition given in the lecture slides
-        tf = self.tf(term, doc_id)
+        weighted_tf = 1 + math.log(self.tf(term, doc_id), 10)  # becaue this is the weighting scheme specified in the question
         idf = self.idf(term)
-        return tf*idf
+        return weighted_tf*idf
 
     
-    def compute_sim(self, query_str): 
+    def compute_sim(self, query_str):   # TODO has anyone tested this yet??? 
         # find all the docs matching query, assumiung this will be lowercased already
         doc_list = self.query(query_str) 
         
