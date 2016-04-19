@@ -1,6 +1,7 @@
-# This is Chiao-ting and Magdalena's code originally at the start of lab1.py
+# class for an inverted index represented as a python dictionary
 
-import math, subprocess
+
+import math, subprocess, shlex
 
 class PythonIndex:
 
@@ -257,6 +258,10 @@ class PythonIndex:
         else:
             return "Invalid input"
     
+    
+    
+# functions for final part of assignment
+
     def idf(self, term, num_docs=1000):
         # calculate the inverted document frequency of a given term, defaults to 1000 since 1000 docs in our data (i think... should probably check this)
         # idf defined as log_10 N/(df_t)
@@ -264,17 +269,18 @@ class PythonIndex:
         return math.log((num_docs/df), 10)
         
         
-    def tfidf(self, term, doc):
+    def tfidf(self, term, doc_id):
         # calculate the tf/idf 
         # using the definition given in the lecture slides
-        tf = tf(term, doc)
+        tf = tf(term, doc_id)
         idf = self.idf(term, self.inverted_index)
         return tf*idf
 
     
-    def compute_sim(self, query_str):  # TODO!
-        # find all the docs matching query, assumiung this will be lowercased alread
-        doc_list = self.query(query_str)  #TODO which query function
+    def compute_sim(self, query_str): 
+        # find all the docs matching query, assumiung this will be lowercased already
+        doc_list = self.query(query_str) 
+        
         # compute vector of tf/idf for query terms
         query_terms = query_str.split(" and ")
         query_vector = []  # compute tf/idf for each term in query wrt query in here
@@ -284,6 +290,7 @@ class PythonIndex:
         
         scores = []  # this will be a list of tuples (doc-id, cosine-sim)
         
+        # compute vector of tf/idf weights for each document, then calculate cosine similarity between document and query vectors
         for doc in doc_list:
             doc_vector = []
             for term in query_terms:
@@ -291,10 +298,9 @@ class PythonIndex:
             sim = cosine_sim(query_vector, doc_vector) # compute cosine_sim of that vector with the query vector
             scores.append((doc, sim))
         
-                # rank docs according to similarity
-    
+        # rank docs according to similarity
         scores = sorted(scores, key=lambda x: x[1])  # sort the list of tuples on the cosine sim
-        
+        #TODO check this comes out in the right order!
         
         # return ordered list of docs
         ordered_docs =  [x[0] for x in scores]  # I hope this will give you a list consisting just of the first bit of each tuple, ie the docID
@@ -320,15 +326,15 @@ def cosine_sim(v1, v2):
     
 
 def tf(term, doc):
-        # work out the frequency of the given term in the given document
-        # assume existence of doc tf_lc.txt, as made in section 3 of task
-        # columns: freq, term, doc, separated by spaces? check this, and test
-        query = 'grep "' + term + "\t" + str(doc) + '" term_frequency.txt'  # TODO some kind of safety check? cos shell injection...
-        try:
-            line = subprocess.check_output(query, shell=True)  # using grep for speed in a huge file
-        except:  # grep didn't find the term and document combination you are looking for
-            return 0   
-        cols = line.decode('utf-8').split("\t")
-        print("raw freq: ", cols[0])
-        return 1 + math.log(int(cols[0]), 10)  # because the count of that term in that doc is the value in the first column of file
+    # work out the frequency of the given term in the given document
+    # assume existence of doc term_frequency.txt, as made in section 3 of task
+    #TODO test this with shlex
+    query = shlex.quote('grep "' + term + "\t" + str(doc) + '" term_frequency.txt')  # special shell-escaped version of the string to avoid shell injection attacks
+    try:
+        line = subprocess.check_output(query, shell=True)  # using grep for speed in a huge file
+    except:  # grep didn't find the term and document combination you are looking for
+        return 0   
+    cols = line.decode('utf-8').split("\t")
+    print("raw freq: ", cols[0])
+    return 1 + math.log(int(cols[0]), 10)  # because the count of that term in that doc is the value in the first column of file
     
