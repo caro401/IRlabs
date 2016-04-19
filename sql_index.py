@@ -23,7 +23,7 @@ class SQLIndex:
 
     def get_num_words(self):
         c = self.conn.cursor()
-        num_words = c.execute("SELECT count(*) FROM inverted_index GROUP BY word").fetchone()
+        num_words = c.execute("select count(*) from (select word from inverted_index group by word) as A").fetchone()
         return num_words[0]
 
     def get_num_postings(self):
@@ -35,14 +35,34 @@ class SQLIndex:
         c = self.conn.cursor()
 
         c.execute("SELECT word, count(*) as c \
-        from inverted_index \
-        GROUP BY word \
-        ORDER BY c DESC \
-        LIMIT ?", (num_stop,))
+            from (SELECT word, document \
+            from inverted_index \
+            GROUP BY word, document) as A \
+            GROUP BY word \
+            ORDER BY c DESC \
+            LIMIT ?", (num_stop,))
 
         ret = set()
         for entry in c.fetchall():
             ret.add(entry[0])
+
+        print(self.get_num_words() - num_stop, "words in dictionary after the stop words are removed. ")
+
+        c.execute("SELECT count(*) FROM inverted_index where word not in ( \
+            select word from (SELECT word, count(*) as c \
+                from (SELECT word, document \
+                from inverted_index \
+                GROUP BY word, document) as A \
+                GROUP BY word \
+                ORDER BY c DESC \
+                LIMIT 10) as B \
+            )")
+
+        num_postings = c.fetchone()
+        num_postings = num_postings[0]
+
+        print(num_postings, "total postings after the stop words are removed. ")
+
         return ret
 
     def query(self, q, opt=""):
@@ -60,6 +80,12 @@ class SQLIndex:
             ret.append(int(entry[0]))
         return ret
 
+    def tf(self, term, doc):
+        c = self.conn.cursor()
+        c.execute("select count(*) from inverted_index where word like ? and document=?", (term, doc))
+        q_result = c.fetchone()
+        return q_result[0]
+
     def idf(self, term):
         c = self.conn.cursor()
         q = c.execute("SELECT count(*) FROM (SELECT document from inverted_index GROUP BY document) as A")
@@ -70,16 +96,17 @@ class SQLIndex:
         df = len(self.query(term))
         return math.log((num_docs/df), 10)
 
-    def tfidf(self, term, doc, filename):
+    def tfidf(self, term, doc_id):
         # calculate the tf/idf
         # using the definition given in the lecture slides
-        tf = tfidf_util.tf(term, doc, filename)
+        tf = self.tf(term, doc_id)
         idf = self.idf(term)
         return tf*idf
 
-    def compute_sim(self, query_str):  # TODO!
-        # find all the docs matching query, assumiung this will be lowercased alread
+    def compute_sim(self, query_str):
+        # find all the docs matching query, assumiung this will be lowercased already
         doc_list = self.query(query_str)
+
         # compute vector of tf/idf for query terms
         query_terms = query_str.split(" AND ")
         query_vector = []  # compute tf/idf for each term in query wrt query in here
@@ -89,17 +116,17 @@ class SQLIndex:
 
         scores = []  # this will be a list of tuples (doc-id, cosine-sim)
 
+        # compute vector of tf/idf weights for each document, then calculate cosine similarity between document and query vectors
         for doc in doc_list:
             doc_vector = []
             for term in query_terms:
-                doc_vector.append(self.tfidf(doc, term)) # compute vector of tf/idf of all query
+                doc_vector.append(self.tfidf(term, doc)) # compute vector of tf/idf of all query
             sim = tfidf_util.cosine_sim(query_vector, doc_vector) # compute cosine_sim of that vector with the query vector
             scores.append((doc, sim))
 
-                # rank docs according to similarity
-
+        # rank docs according to similarity
         scores = sorted(scores, key=lambda x: x[1])  # sort the list of tuples on the cosine sim
-
+        #TODO check this comes out in the right order!
 
         # return ordered list of docs
         ordered_docs =  [x[0] for x in scores]  # I hope this will give you a list consisting just of the first bit of each tuple, ie the docID

@@ -17,11 +17,13 @@ def main():
                 index = python_index.PythonIndex(filename)
             except:
                 print("File not found, please try again. ")
+                continue
         elif style == "db":
             try:
                 index = sql_index.SQLIndex(filename)
             except:
                 print("File not found, please try again. ")
+                continue
         print("File Imported. Basic inverted index created. ")
         print(index.get_num_words(), "words in dictionary.")
         print(index.get_num_postings(), "total postings.")
