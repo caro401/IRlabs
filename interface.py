@@ -44,7 +44,7 @@ def main():
 
         if nxt == "q":
             query = input("Please type your query, using 'AND' to denote conjunction: ")
-            if query.count(" ") == 2 and style == 'dict':
+            if query.count(" AND ") == 1 and style == 'dict':
                 opt = input("What kind of function would you like to use? Type\n    's' for using the function with set (no step count)\n    'n' for normal walk through\n    'o' for optimized version with skip pointers for every step\n    '2' for optimized version with fixed skip pointers\nchoices: \n")
             else:
                 opt = 's'

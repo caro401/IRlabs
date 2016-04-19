@@ -86,9 +86,9 @@ class PythonIndex:
 
     def inter_queries(self, q):
         # function for finding the intersection of two query terms
-        a = q.find(" ")
-        q = q[:a]+q[a:a+4].lower()+q[a+4:] # just lower "AND"
-        a = q.find(" and ") # the space is included so that it can take "and" as queries
+        #a = q.find(" ")
+        #q = q[:a]+q[a:a+4].lower()+q[a+4:] # just lower "AND"
+        a = q.find(" AND ") # the space is included so that it can take "and" as queries
         if a != -1: 
             word1 = q[:a]
             word2 = q[a+5:]
@@ -104,14 +104,14 @@ class PythonIndex:
 
     def inter_many_queries(self, q): # this function is not case-sensitive
         # function for finding the intersection of >2 query terms
-        q = q.lower() 
-        a = q.find(" and ")
+        #q = q.lower() 
+        a = q.find(" AND ")
         query_list = []
         while a != -1: # when there are still queries left (by checking " and ")
             word = q[:a]
             query_list.append(word)
             q = q[a+5:]
-            a = q.find(" and ")
+            a = q.find(" AND ")
         query_list.append(q) # all the queries are appended to this list
 
         intersections = []
@@ -135,9 +135,9 @@ class PythonIndex:
 
     def inter_queries_re(self, q):
         # revised O(m+n) version of inter_queries() showing how many comparison steps there are
-        a = q.find(" ")
-        q = q[:a]+q[a:a+4].lower()+q[a+4:] # just lower "AND"
-        a = q.find(" and ") # the space is included so that it can take "and" as queries
+        #a = q.find(" ")
+        # q = q[:a]+q[a:a+4].lower()+q[a+4:] # just lower "AND"
+        a = q.find(" AND ") # the space is included so that it can take "and" as queries
         if a != -1:
             word1 = q[:a]
             word2 = q[a+5:]
@@ -173,9 +173,9 @@ class PythonIndex:
     # Unlike the skip points which occur every sqrt(len(lst)) items, this check the skip pointer for every item.
     # bi_queries = input("Intersection of two queries, please seperate your queries with AND, ex. school AND kid: ")
     def inter_queries_op(self, q):
-        a = q.find(" ")
-        q = q[:a]+q[a:a+4].lower()+q[a+4:] # just lower "AND"
-        a = q.find(" and ") # the space is included so that it can take "and" as queries
+        #a = q.find(" ")
+        #q = q[:a]+q[a:a+4].lower()+q[a+4:] # just lower "AND"
+        a = q.find(" AND ") # the space is included so that it can take "and" as queries
         if a != -1:
             word1 = q[:a]
             word2 = q[a+5:]
@@ -218,9 +218,9 @@ class PythonIndex:
 # This function here works with fixed skip pointers, only items in the item_skip lists will be checked when needed.
 
     def inter_queries_op_2(self, q):
-        a = q.find(" ")
-        q = q[:a]+q[a:a+4].lower()+q[a+4:] # just lower "AND"
-        a = q.find(" and ") # the space is included so that it can take "and" as queries
+        #a = q.find(" ")
+        #q = q[:a]+q[a:a+4].lower()+q[a+4:] # just lower "AND"
+        a = q.find(" AND ") # the space is included so that it can take "and" as queries
         if a != -1:
             word1 = q[:a]
             word2 = q[a+5:]
