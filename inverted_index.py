@@ -68,7 +68,6 @@ class InvertedIndex:
         # going to assume unique query terms, so raw tf = 1, scaled tf = 1 + log_10(1) = 1
         for term in query_terms:
             query_vector.append(self.idf(term))
-        print(query_vector)
 
         scores = []  # this will be a list of tuples (doc-id, cosine-sim)
 
@@ -78,13 +77,11 @@ class InvertedIndex:
             for term in query_terms:
                 doc_vector.append(self.tfidf(term, doc)) # compute vector of tf/idf of all query
             sim = tfidf_util.cosine_sim(query_vector, doc_vector) # compute cosine_sim of that vector with the query vector
-            print("Sim:",doc_vector,sim)
             scores.append((doc, sim))
 
-        print(scores)
         # rank docs according to similarity
         scores = sorted(scores, key=lambda x: x[1])  # sort the list of tuples on the cosine sim
-        #TODO check this comes out in the right order!
+        scores.reverse()
 
         # return ordered list of docs
         ordered_docs =  [x[0] for x in scores]  # I hope this will give you a list consisting just of the first bit of each tuple, ie the docID
