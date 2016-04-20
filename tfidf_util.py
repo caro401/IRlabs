@@ -1,5 +1,6 @@
 import math
 
+
 def dot_prod(v1, v2):
     # calculate the dot product of 2 vectors, represented as arrays
     if len(v1) != len(v2):
@@ -17,13 +18,3 @@ def cosine_sim(v1, v2):
     return sim
 
 
-def tf(term, doc, filename):
-        # work out the frequency of the given term in the given document
-        # assume existence of doc tf_lc.txt, as made in section 3 of task
-        # columns: freq, term, doc, separated by spaces? check this, and test
-        with open(filename, "r", encoding="utf8") as fobj:
-            for line in fobj:
-                frequency, t, d = line.split()
-                if term == t and int(d) == doc:
-                    return 1 + math.log(int(frequency), 10)
-        return 0

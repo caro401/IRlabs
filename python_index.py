@@ -1,15 +1,16 @@
 # class for an inverted index represented as a python dictionary
 
+import math, inverted_index
 
-import math, subprocess, shlex, tfidf_util
 
-class PythonIndex:
+class PythonIndex(inverted_index.InvertedIndex):
 
     def __init__(self, filename):
         # create and fill inverted index
+        # inverted index is a dictionary with words as keys, mapping to a list of associated documents
         self.inverted_index = dict()
         self.num_postings = 0
-        self._tf = dict()  # what even is this?
+        self._tf = dict()
         self._docs = set()
         with open(filename, "r", encoding="utf8") as fobj:
             for line in fobj:
@@ -283,50 +284,12 @@ class PythonIndex:
 # functions for final part of assignment
 
     def tf(self, term, doc):
-        # return the raw term frequency of the term in the document (I presume???)
-        return self._tf[term][doc]
+        return 1 + math.log(self._tf[term][doc],10)
 
     def idf(self, term):
-        # calculate the inverted document frequency of a given term
+        # calculate the inverted document frequency of a given term, defaults to 1000 since 1000 docs in our data (i think... should probably check this)
         # idf defined as log_10 N/(df_t)
         df = len(self.simple_query(term))
         return math.log((len(self._docs)/df), 10)
         
-        
-    def tfidf(self, term, doc_id):
-        # calculate the tf/idf 
-        # using the definition given in the lecture slides
-        weighted_tf = 1 + math.log(self.tf(term, doc_id), 10)  # becaue this is the weighting scheme specified in the question
-        idf = self.idf(term)
-        return weighted_tf*idf
 
-    
-    def compute_sim(self, query_str):   # TODO has anyone tested this yet??? 
-        # find all the docs matching query, assumiung this will be lowercased already
-        doc_list = self.query(query_str) 
-        
-        # compute vector of tf/idf for query terms
-        query_terms = query_str.split(" AND ")
-        query_vector = []  # compute tf/idf for each term in query wrt query in here
-        # going to assume unique query terms, so raw tf = 1, scaled tf = 1 + log_10(1) = 1
-        for term in query_terms:
-            query_vector.append(self.idf(term))
-        
-        scores = []  # this will be a list of tuples (doc-id, cosine-sim)
-        
-        # compute vector of tf/idf weights for each document, then calculate cosine similarity between document and query vectors
-        for doc in doc_list:
-            doc_vector = []
-            for term in query_terms:
-                doc_vector.append(self.tfidf(term, doc)) # compute vector of tf/idf of all query
-            sim = tfidf_util.cosine_sim(query_vector, doc_vector) # compute cosine_sim of that vector with the query vector
-            scores.append((doc, sim))
-        
-        # rank docs according to similarity
-        scores = sorted(scores, key=lambda x: x[1])  # sort the list of tuples on the cosine sim
-        #TODO check this comes out in the right order!
-        
-        # return ordered list of docs
-        ordered_docs =  [x[0] for x in scores]  # I hope this will give you a list consisting just of the first bit of each tuple, ie the docID
-        return ordered_docs
-        
