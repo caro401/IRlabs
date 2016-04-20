@@ -5,19 +5,19 @@ import inverted_index
 
 class SQLIndex(inverted_index.InvertedIndex):
 
-    def __init__(self, filename):
+    def __init__(self, frequency):
 
         # Open SQLite and create table
         self.conn = sqlite3.connect(":memory:")
         c = self.conn.cursor()
         c.execute('''CREATE TABLE inverted_index
-                     (word text, document text)''')
+                     (word text, document int, amt text)''')
 
-        with open(filename, "r", encoding="utf8") as fobj:
+        with open(frequency, "r", encoding="utf8") as fobj:
             for line in fobj:
-                word, document = line.split()
+                count, word, document = line.split(" ")
                 # Insert a row of data
-                c.execute("INSERT INTO inverted_index VALUES (?, ?)", (word, document))
+                c.execute("INSERT INTO inverted_index VALUES (?, ?, ?)", (word, document, count))
 
         # Save (commit) the changes
         self.conn.commit()
@@ -83,9 +83,9 @@ class SQLIndex(inverted_index.InvertedIndex):
 
     def tf(self, term, doc):
         c = self.conn.cursor()
-        c.execute("select count(*) from inverted_index where word like ? and document=?", (term, doc))
+        c.execute("select amt from inverted_index where word like ? and document=?", (term, doc))
         q_result = c.fetchone()
-        return 1 + math.log(q_result[0], 10)
+        return 1 + math.log(int(q_result[0]), 10)
 
     def idf(self, term):
         c = self.conn.cursor()

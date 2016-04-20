@@ -14,14 +14,13 @@ class PythonIndex(inverted_index.InvertedIndex):
         self._docs = set()
         with open(filename, "r", encoding="utf8") as fobj:
             for line in fobj:
-                word, document = line.split()
-                self._docs.add(int(document))
+                count, word, document = line.split()
                 if word not in self._tf:
                     self._tf[word] = dict()
                 if int(document) not in self._tf[word]:
-                    self._tf[word][int(document)] = 0
-                    self.num_postings += 1
-                self._tf[word][int(document)] += 1
+                    self._tf[word][int(document)] = int(count)
+                self._docs.add(int(document))
+                self.num_postings += 1
                 if word not in self.inverted_index:
                     self.inverted_index[word] = list()
                 self.inverted_index[word].append(int(document))
@@ -284,7 +283,8 @@ class PythonIndex(inverted_index.InvertedIndex):
 # functions for final part of assignment
 
     def tf(self, term, doc):
-        return 1 + math.log(self._tf[term][doc],10)
+        # work out the frequency of the given term in the given document
+        return 1 + math.log(self._tf[term][doc], 10)
 
     def idf(self, term):
         # calculate the inverted document frequency of a given term, defaults to 1000 since 1000 docs in our data (i think... should probably check this)

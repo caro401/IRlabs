@@ -53,7 +53,7 @@ def main():
         elif nxt == "tf":
             term = input("Please enter the term: ")
             doc = int(input("Please enter the document ID number: "))
-            print("The given term is found in the given document", index.tf(term, doc), "time(s)")
+            print("Weighted tf: ", index.tf(term, int(doc)))
 
         elif nxt == "idf":
             term = input("Please enter the term: ")
