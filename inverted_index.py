@@ -5,27 +5,50 @@ class InvertedIndex:
     # Abstract class InvertedIndex for reuse of tfidf code
 
     def get_num_words(self):
+        """
+        :return: the number of unique words in the inverted index
+        """
         raise NotImplementedError("Abstract class InvertedIndex does not implement get_num_words()")
 
     def get_num_postings(self):
+        """
+        :return: the number of unique word, document pairs in the inverted index
+        """
         raise NotImplementedError("Abstract class InvertedIndex does not implement get_num_postings()")
 
-    def get_stop_words(self):
+    def get_stop_words(self, stop_num):
+        """
+        Returns the words which show up in the largest number of documents
+        :param: the number of stop words to find
+        :return: the list of stop words
+        """
         raise NotImplementedError("Abstract class InvertedIndex does not implement get_stop_words()")
 
     def tf(self, term, doc_id):
+        """
+        Returns the weighted frequency: 1 + log_base_10(raw frequency of given term in given document)
+        :param term: string containing the term we are looking for
+        :param doc_id: id of document we are looking for the term in
+        :return: the weighted frequency
+        """
         raise NotImplementedError("Abstract class InvertedIndex does not implement tf(term, doc_id)")
 
     def idf(self, term):
+        """
+        Returns the inverse document frequency:
+        log_base_10(total number of documents in the index/the number of documents in which we can find the given term)
+        :param term: string containing the term we are looking for
+        :return: the inverse document frequency
+        """
         raise NotImplementedError("Abstract class InvertedIndex does not implement idf(term)")
 
     def query(self, query_str):
-        '''
+        """
         Finds all documents containing every given term
         :param query_str: a string containing a list of terms separated by 'AND'
             For example, 'kids AND really AND school'
         :return: a list of document ids
-        '''
+        """
         raise NotImplementedError("Abstract class InvertedIndex does not implement query(query_str)")
 
     def tfidf(self, term, doc_id):
