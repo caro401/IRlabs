@@ -10,7 +10,7 @@ class PythonIndex(inverted_index.InvertedIndex):
         # inverted index is a dictionary with words as keys, mapping to a list of associated documents
         self.inverted_index = dict()
         self.num_postings = 0
-        self._tf = dict()
+        self._tf = dict() # keeps a count of the raw frequency of every word, document pair.
         self._docs = set()
         with open(filename, "r", encoding="utf8") as fobj:
             for line in fobj:
@@ -25,7 +25,7 @@ class PythonIndex(inverted_index.InvertedIndex):
                 if word not in self.inverted_index:
                     self.inverted_index[word] = list()
                 self.inverted_index[word].append(int(document))
-        
+
 
     def get_num_words(self):
         return len(self.inverted_index)
@@ -82,7 +82,7 @@ class PythonIndex(inverted_index.InvertedIndex):
                 return query_result[0]
             else:
                 print("Invalid input, please try again")
-            
+
     # Simple query fuction:
     def simple_query(self, q):
         # query the inverted index for a query q, expected to be a single word
@@ -96,7 +96,7 @@ class PythonIndex(inverted_index.InvertedIndex):
         #a = q.find(" ")
         #q = q[:a]+q[a:a+4].lower()+q[a+4:] # just lower "AND"
         a = q.find(" AND ") # the space is included so that it can take "and" as queries
-        if a != -1: 
+        if a != -1:
             word1 = q[:a]
             word2 = q[a+5:]
             lst1 = self.simple_query(word1)
@@ -111,7 +111,7 @@ class PythonIndex(inverted_index.InvertedIndex):
 
     def inter_many_queries(self, q): # this function is not case-sensitive
         # function for finding the intersection of >2 query terms
-        #q = q.lower() 
+        #q = q.lower()
         a = q.find(" AND ")
         query_list = []
         while a != -1: # when there are still queries left (by checking " and ")
@@ -159,7 +159,7 @@ class PythonIndex(inverted_index.InvertedIndex):
             current1 = 0 # pointer for lst1
             current2 = 0 # pointer for lst2
             while current1 <= len(lst1)-1 and current2 <= len(lst2)-1: # when both have not reach the end of the list
-                if lst1[current1] == lst2[current2]: # if found in both, increase step, append, and move pointer. 
+                if lst1[current1] == lst2[current2]: # if found in both, increase step, append, and move pointer.
                     step += 1
                     inter_result.append(lst1[current1])
                     current1 += 1
@@ -167,7 +167,7 @@ class PythonIndex(inverted_index.InvertedIndex):
                 elif lst1[current1] < lst2[current2]: # if the current item in lst1 is smaller, increase step and current1
                     step += 1
                     current1 += 1
-                else: # lst1[current1] > lst2[current2], increase step and current2 
+                else: # lst1[current1] > lst2[current2], increase step and current2
                     step += 1
                     current2 += 1
             # print("Number of steps to find the intersection: ", step)
@@ -196,24 +196,24 @@ class PythonIndex(inverted_index.InvertedIndex):
                 step = 0 # for counting the step
             inter_result = [] # the intersection goes here
             skip1 = round(math.sqrt(len(lst1))) # the skip gap is the square root of the length of the list
-            skip2 = round(math.sqrt(len(lst2))) 
+            skip2 = round(math.sqrt(len(lst2)))
             current1 = 0 # pointer for lst1
-            current2 = 0 # pointer for lst2 
+            current2 = 0 # pointer for lst2
             while current1 <= len(lst1)-1 and current2 <= len(lst2)-1: # when both have not reach the end of the lists
                 if lst1[current1] == lst2[current2]:  # if the item occurs in both lists, increase step, add item to result, move both pointers
-                    step += 1 
+                    step += 1
                     inter_result.append(lst1[current1])
                     current1 += 1
                     current2 += 1
                 elif lst1[current1] < lst2[current2]: # if the current item in lst1 is smaller
                     step += 1 # increase step
-                    if current1+skip1 <= len(lst1)-1: # if the current point plus the gap to skip pointer is within the list length 
-                        if lst1[current1+skip1] < lst2[current2]: # check if the skip pointer in lst1 will still be smaller than item in lst2 
+                    if current1+skip1 <= len(lst1)-1: # if the current point plus the gap to skip pointer is within the list length
+                        if lst1[current1+skip1] < lst2[current2]: # check if the skip pointer in lst1 will still be smaller than item in lst2
                             current1 += skip1 # if yes, increase current1 with the gap
                     current1 += 1 # if not, just increase pointer by 1
                 else: # lst1[current1] > lst2[current2] (if the current item in lst2 is smaller)
                     step += 1 # increase step
-                    if current2+skip2 <= len(lst2)-1: # if the current point plus the gap to skip pointer is within the list length 
+                    if current2+skip2 <= len(lst2)-1: # if the current point plus the gap to skip pointer is within the list length
                         if lst1[current1] > lst2[current2+skip2]: # check if the skip pointer in lst2 will still be smaller than item in lst1
                             current2 += skip2 # if yes, increase current2 with the gap
                     current2 += 1 # if not, just increase pointer by 1
@@ -244,8 +244,8 @@ class PythonIndex(inverted_index.InvertedIndex):
             skip2 = round(math.sqrt(len(lst2)))
             current1 = 0
             current2 = 0
-            item_skip1 = [] # list of items with skip pointers in lst1 
-            item_skip2 = [] # list of items with skip pointers in lst2 
+            item_skip1 = [] # list of items with skip pointers in lst1
+            item_skip2 = [] # list of items with skip pointers in lst2
             for i in range(0, len(lst1), skip1): # append items with skip1 as gap
                 item_skip1.append(lst1[i])
             for i in range(0, len(lst2), skip2): # append items with skip2 as gap
@@ -268,18 +268,18 @@ class PythonIndex(inverted_index.InvertedIndex):
                 else: # lst1[current1] > lst2[current2]
                     step += 1
                     if lst2[current2] in item_skip2[:-1]: # if current item has skip pointer and is not the last in item_skip2 list
-                        if lst1[current1] > lst2[current2+skip2]: # if current will still be smaller than item in lst1 after skip  
+                        if lst1[current1] > lst2[current2+skip2]: # if current will still be smaller than item in lst1 after skip
                             current2 += skip2 # then skip
                         else: # if not, just increase by 1
-                            current2 += 1 
+                            current2 += 1
                     else: # lst1[current1] < lst2[current2+skip2], do not skip, just increase 1
                         current2 += 1
 
             return inter_result, step
         else:
             return self.simple_query(q), 0
-    
-    
+
+
 
 # functions for final part of assignment
 
@@ -291,5 +291,5 @@ class PythonIndex(inverted_index.InvertedIndex):
         # idf defined as log_10 N/(df_t)
         df = len(self.simple_query(term))
         return math.log((len(self._docs)/df), 10)
-        
+
 
