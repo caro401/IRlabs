@@ -151,6 +151,9 @@ class PythonIndex(inverted_index.InvertedIndex):
             word2_a = q.find(" AND ")
             if word2_a != -1:
                 lst2, step = self.inter_queries_re(word2)
+                # if list 2 is empty, we know the intersection of all words will be empty, so there is no need to continue
+                if len(lst2) == 0:
+                    return lst2, step
             else:
                 lst2 = self.simple_query(word2)
                 step = 0 # for counting the step
@@ -190,6 +193,9 @@ class PythonIndex(inverted_index.InvertedIndex):
             word2_a = q.find(" AND ")
             if word2_a != -1:
                 lst2, step = self.inter_queries_op(word2)
+                # if list 2 is empty, we know the intersection of all words will be empty, so there is no need to continue
+                if len(lst2) == 0:
+                    return lst2, step
             else:
                 lst2 = self.simple_query(word2)
                 step = 0 # for counting the step
@@ -235,6 +241,9 @@ class PythonIndex(inverted_index.InvertedIndex):
             word2_a = q.find(" AND ")
             if word2_a != -1:
                 lst2, step = self.inter_queries_op_2(word2)
+                # if list 2 is empty, we know the intersection of all words will be empty, so there is no need to continue
+                if len(lst2) == 0:
+                    return lst2, step
             else:
                 lst2 = self.simple_query(word2)
                 step = 0 # for counting the step
